@@ -37,6 +37,8 @@ def test_order_totals(default_store: Store):
             float(order.subtotal), 2
         ) + round(float(order.tax_paid), 2)
         order_dict = order.to_dict()
+        assert order_dict["subtotal"] == round(order.subtotal * 100)
+        assert order_dict["tax_paid"] == round(order.tax_paid * 100)
         assert (
             order_dict["order_total"] == order_dict["subtotal"] + order_dict["tax_paid"]
         )

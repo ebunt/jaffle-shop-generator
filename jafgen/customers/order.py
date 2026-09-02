@@ -13,6 +13,11 @@ fake = Faker()
 
 OrderId = NewType("OrderId", uuid.UUID)
 
+
+def _to_cents(value: float) -> int:
+    return int(round(value * 100))
+
+
 @dataclass
 class Order:
     customer: "customer.Customer"
@@ -34,17 +39,16 @@ class Order:
         return f"{self.customer.name} bought {str(self.items)} at {self.day}"
 
     def to_dict(self) -> dict[str, Any]:
+        subtotal_cents = _to_cents(self.subtotal)
+        tax_paid_cents = _to_cents(self.tax_paid)
         return {
             "id": str(self.id),
             "customer": str(self.customer.id),
             "ordered_at": str(self.day.date.isoformat()),
             "store_id": str(self.store.id),
-            "subtotal": int(self.subtotal * 100),
-            "tax_paid": int(self.tax_paid * 100),
-            # TODO: figure out why this is doesn't cause a test failure
-            # in tests/test_order_totals.py
-            # "order_total": int(self.order_total * 100),
-            "order_total": int(int(self.subtotal * 100) + int(self.tax_paid * 100)),
+            "subtotal": subtotal_cents,
+            "tax_paid": tax_paid_cents,
+            "order_total": subtotal_cents + tax_paid_cents,
         }
 
     def items_to_dict(self) -> list[dict[str, Any]]:
